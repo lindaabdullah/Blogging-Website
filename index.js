@@ -75,9 +75,8 @@ app.get("/api/comment", (req, res) => {
 
 app.get("/api/all", authenticate, (req, res) => {
     const command = db.prepare("select * from posts").all();
-    console.log(command);
-    const {username} = req.user;
-    command.forEach( i => i.username = username )
+    
+    // command.forEach( i => i.username = username )
     res.json(command);
 });
 
@@ -154,5 +153,5 @@ app.post("/api/delete", (req, res) => {
 
     const deleteComments = db.prepare("DELETE FROM comments where postID=@SectionID");
     deleteComments.run(body);
-    
+
 });

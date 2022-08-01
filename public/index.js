@@ -77,14 +77,13 @@ async function addPost() {
     if(res.length != 0){
         const resResult = res[0];
         postCount = resResult.SectionID;
-        postCount++;
+        postCount++; 
     }
     else {
         postCount = 1;
     }
 
     const title = document.querySelector('input[id="title"]').value;
-
     const hashtag1 = document.querySelector('input[id="hashTag1"]').value;
     const hashtag2 = document.querySelector('input[id="hashTag2"]').value;
     const hashtag3 = document.querySelector('input[id="hashTag3"]').value;
@@ -103,24 +102,25 @@ async function addPost() {
         paragraph: p
     };
 
-    await fetch("/api/Addpost", {
+    const resp = await fetch("/api/Addpost", {
         method: "post", 
         headers: { "content-type": "application/json" }, 
         body: JSON.stringify(post)
     });
 
+    const {username} = await resp.json();
+    post.username = username;
+
     appendPost(post);
 }
 
+
 function appendPost(post) {
 
-    const mytoken = getCookie("token"); 
-    const { username } = decode(mytoken);
-        
-    console.log(username);
+    // console.log(username);
 
-    const { SectionID, title, hashtag1, hashtag2, hashtag3, hashtag4, image, paragraph } = post;
-    
+    const { SectionID, title, hashtag1, hashtag2, hashtag3, hashtag4, image, paragraph, username } = post;
+
 
     const usernameplacement = document.createElement("div");
     usernameplacement.classList.add("usernamePlacement");
@@ -418,6 +418,7 @@ async function appendAllPosts() {
     else {
         const posts = await resp.json();
         for (const post of posts) {
+              
             appendPost(post);
         }
         appendComments();

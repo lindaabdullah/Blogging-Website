@@ -40,7 +40,7 @@ document.getElementById("signupButton").addEventListener("click", async function
         // const element = document.getElementById("text");
         element.classList.remove("hidden");
         element.innerText = "user already exists";        
-    } else {
+    } else if (status == "SignUpSuccessful") {
         element.innerText = "Sign Up Successful";        
     }
     

@@ -22,3 +22,7 @@ document.getElementById("logInButton").addEventListener("click", async function 
         window.location.href = "/index.html";
     }
 });
+
+document.getElementById("signUpButton").addEventListener("click", function() {
+    window.location.href = "/signup";
+});
