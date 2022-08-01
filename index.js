@@ -24,6 +24,7 @@ function authenticate(req, res, next) {
         req.user = user;
         next();
     } catch (e) {
+
         res.sendStatus(403);
     }
 }
@@ -31,6 +32,10 @@ function authenticate(req, res, next) {
 app.listen(2000);
 app.use(express.json());
 app.use(cookieParser());
+
+app.get("/api/authenticate", (res, req) => {
+    authenticate;
+});
 
 app.post("/api/Add", authenticate, (req, res) => {
     const command = req.body;
@@ -53,7 +58,9 @@ app.post("/api/Addpost", authenticate, (req, res) => {
 
 app.get("/api/query", (req, res) => {
     // const {SectionID} = req.body;
-    const command = db.prepare("SELECT * FROM posts WHERE SectionID=(SELECT max(SectionID) FROM posts);").all();
+    var command = db.prepare("SELECT * FROM posts WHERE SectionID=(SELECT max(SectionID) FROM posts);").all();
+    
+    console.log(command);
     res.json(command);
 });
 
@@ -131,5 +138,21 @@ app.post("/api/signup", (req, res) => {
     // console.log();
 })
 
+app.get("/api/commentList", (req, res) => {
+    const rows = db.prepare("SELECT * FROM comments").all();
+    res.json(rows);
+});
+
 app.use(express.static("public"));
 // app.get("/food.jpg", (req, res) => res.sendFile(path.join(__dirname, "public", "food.jpg")));
+
+app.post("/api/delete", (req, res) => {
+    const body = req.body;
+
+    const deletePost = db.prepare("DELETE FROM posts where SectionID=@SectionID");
+    deletePost.run(body);
+
+    const deleteComments = db.prepare("DELETE FROM comments where postID=@SectionID");
+    deleteComments.run(body);
+    
+});

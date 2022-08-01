@@ -1,0 +1,9 @@
+body {
+    display: flex;
+    background-color: black;
+    justify-content: space-around;
+}
+
+h1 {
+    color: red;
+}

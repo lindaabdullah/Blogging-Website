@@ -13,6 +13,9 @@
 //     this.innerText = "Read Less";
 // });
 
+var del = false;
+var postCount = 0;
+
 function updatePostElem(paragraph) {
     const text = paragraph.innerText.split(" ");
     // console.log(text);
@@ -54,7 +57,7 @@ function getCookie(name) {
 }
 
 function decode(token) {
-    console.log("im decoding");
+    // console.log("im decoding");
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
@@ -67,13 +70,19 @@ function decode(token) {
 var enterBtn = false;
 // var postCount = 2;
 
-async function addPost() {
+async function addPost() { 
 
-    // console.log("hiii");
-    
     const result = await fetch("/api/query");
-    const resResult = await result.json();
-    const {postCount} = resResult;
+    const res = await result.json();
+    if(res.length != 0){
+        const resResult = res[0];
+        postCount = resResult.SectionID;
+        postCount++;
+    }
+    else {
+        postCount = 1;
+    }
+
     const title = document.querySelector('input[id="title"]').value;
 
     const hashtag1 = document.querySelector('input[id="hashTag1"]').value;
@@ -160,6 +169,24 @@ function appendPost(post) {
     const section = document.createElement("section");
     section.classList.add("post");
     section.id = `postSection${SectionID}`;
+    section.addEventListener("click", async function (e) {
+        if(del){
+            let isExecuted = confirm("Are you sure you want to delete this post?");
+            console.log(`executed: ${isExecuted}`);
+            const id = this.id[this.id.length-1];
+            // console.log(id);
+            if(isExecuted) {
+                e.preventDefault(); 
+                this.remove();
+
+                await fetch("/api/delete", {
+                    method: "post", 
+                    headers: { "content-type": "application/json" }, 
+                    body: JSON.stringify({SectionID: id})
+                });
+            }
+        }
+    });
 
     const header = document.createElement("header");
 
@@ -354,14 +381,71 @@ document.getElementById("searchInput").addEventListener("input", function (e) {
 });
 
 
-async function getAllPosts() {
-    const resp = await fetch("/api/all");
-    return await resp.json();
+// async function getAllPosts() {
+//     const resp = await fetch("/api/all");
+//     return await resp.json();
+// }
+
+async function appendComments() {
+    const resp = await fetch("/api/commentList");
+    const rows = await resp.json() 
+    for (const r of rows) {
+        const id = r.postID;
+        // console.log(id);
+        const s = `commentList${id}`;
+        // console.log(s);
+        const ul = document.getElementById(s);
+        try {
+            const children = ul.children;
+            // console.log(children.length);
+            if (children.length == 0){
+                ul.classList.remove("hidden");
+            }
+            const li = document.createElement("li");
+            li.innerText = `${r.username}: ${r.comment}`;
+            ul.appendChild(li);
+        } catch (error) {
+            
+        }
+    }
 }
 
 async function appendAllPosts() {
-    const posts = await getAllPosts();
-    for (const post of posts) {
-        appendPost(post);
+    const resp = await fetch("/api/all");
+    if (resp.status == 403) {
+        window.location.href = "/error.html";
+    }
+    else {
+        const posts = await resp.json();
+        for (const post of posts) {
+            appendPost(post);
+        }
+        appendComments();
     }
 }
+
+async function deletePost(id) {
+    await fetch("/api/delete", 
+        {
+            method: "post", 
+            headers: { "content-type": "application/json" }, 
+            body: JSON.stringify({SectionID: id})
+        }
+    )
+}
+
+
+document.getElementById("deleteButton").addEventListener("click", function(e) {
+    del = !del;
+    console.log(del);
+    const element = document.getElementById("deleteButton");
+    if(del) {
+        postCount--;
+        element.style.backgroundColor = "lightgreen";
+        window.confirm("Select post you want to delete");
+    }
+    else {
+        element.style.backgroundColor = "lightskyblue";
+
+    }
+});
