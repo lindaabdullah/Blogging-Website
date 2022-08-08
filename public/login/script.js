@@ -6,8 +6,8 @@
 document.getElementById("logInButton").addEventListener("click", async function () {
     const user = document.getElementById("username").value;
     const pas = document.getElementById("password").value;
-    console.log(user);
-    console.log(pas);
+    // console.log(user);
+    // console.log(pas);
     console.log("helo");
 
     const f = await fetch("/api/login", {
@@ -21,6 +21,7 @@ document.getElementById("logInButton").addEventListener("click", async function 
         console.log("authenticated");
         window.location.href = "/index.html";
     }
+   
 });
 
 document.getElementById("signUpButton").addEventListener("click", function() {

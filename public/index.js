@@ -57,7 +57,6 @@ function getCookie(name) {
 }
 
 function decode(token) {
-    // console.log("im decoding");
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
@@ -204,6 +203,7 @@ function appendPost(post) {
 
     const para = document.createElement("p");
     para.innerText = paragraph;
+    para.classList.add("postParagraph");
 
     const sectionImg = document.createElement("section");
     sectionImg.classList.add("imageText");
@@ -213,13 +213,15 @@ function appendPost(post) {
 
     hashTags.appendChild(ul);
     div.appendChild(img);
+    div.appendChild(para);
 
     section.appendChild(header);
     section.appendChild(usernameplacement);
     section.appendChild(hashTags);
     section.appendChild(sectionImg);
 
-    section.appendChild(para);
+    // section.appendChild(para);
+
     updatePostElem(para);
     document.querySelector(".content").appendChild(section);
 

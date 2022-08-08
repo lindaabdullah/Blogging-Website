@@ -29,6 +29,7 @@ function authenticate(req, res, next) {
     }
 }
 
+
 app.listen(2000);
 app.use(express.json());
 app.use(cookieParser());
@@ -57,7 +58,6 @@ app.post("/api/Addpost", authenticate, (req, res) => {
 });
 
 app.get("/api/query", (req, res) => {
-    // const {SectionID} = req.body;
     var command = db.prepare("SELECT * FROM posts WHERE SectionID=(SELECT max(SectionID) FROM posts);").all();
     
     console.log(command);
@@ -100,11 +100,10 @@ app.post("/api/login", (req, res) => {
         // console.log(authenticated);
         // res.cookie("loginCookie", cookie);
 
-
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
         res.cookie("token", token);
         res.json({ token });
-
+   
     } else {
         res.sendStatus(403);
     }
@@ -118,24 +117,26 @@ app.get("/api/secret", authenticate, (req, res) => {
 app.post("/api/signup", (req, res) => {
 
     const signup = req.body;
+    console.log(signup)
     const {SSN, name, surname, age, username, password} = req.body;
+
+    const check = db.prepare("SELECT * FROM users WHERE SSN=@SSN;").get({SSN});
+    
+    console.log(check);
 
     if(SSN == "" || name == "" || surname == "" || age == null || username == "" || password == "" ){
         res.json({status: "missing information"});
     }
-    const check = db.prepare("SELECT * FROM user WHERE SSN=@SSN;").get({SSN});
-    console.log(check);
-    if (check) {
+    else if (check) {
         res.json({status: "exists"});
-        // if(check != ""){
-        // }
+        
     } else {
-        const newUser = db.prepare("INSERT INTO user VALUES (@SSN, @name, @surname, @age, @username, @password);");
+        const newUser = db.prepare("INSERT INTO users VALUES (@SSN, @name, @surname, @age, @username, @password);");
         newUser.run(signup);
         res.json({status: "SignUpSuccessful"});
     }  
-    // console.log();
-})
+});
+
 
 app.get("/api/commentList", (req, res) => {
     const rows = db.prepare("SELECT * FROM comments").all();
@@ -143,7 +144,6 @@ app.get("/api/commentList", (req, res) => {
 });
 
 app.use(express.static("public"));
-// app.get("/food.jpg", (req, res) => res.sendFile(path.join(__dirname, "public", "food.jpg")));
 
 app.post("/api/delete", (req, res) => {
     const body = req.body;
@@ -154,4 +154,15 @@ app.post("/api/delete", (req, res) => {
     const deleteComments = db.prepare("DELETE FROM comments where postID=@SectionID");
     deleteComments.run(body);
 
+});
+
+app.post("/api/queryTest", (req, res) =>{
+
+    const {username} = req.body;
+    // const a = db.prepare("select * from comments").all();
+    const b = db.prepare("select * from comments where username=@username").all({username});
+    // const c = db.prepare("select * from comments where username=@username").get({username});
+    // console.log(a);
+    // console.log(c);
+    res.json(b);
 });
